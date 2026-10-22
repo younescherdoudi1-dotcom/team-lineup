@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070D22">
+<title>تشكيلة الفريق</title>
+<link rel="icon" href="coach.jpg">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Layout: a full illustrated stadium cover with two entrances (player, coach); inside, a lineup page with pitch, bench, note and an updates feed. */
+html { -webkit-text-size-adjust: 100%; }
+:root {
+  --bg: #EDF1EA;
+  --surface: #F8FAF6;
+  --ink: #12241A;
+  --muted: #566A5C;
+  --line: #CBD6C8;
+  --pitch: #1F6B3A;
+  --pitch-alt: #1B6133;
+  --chalk: #F2F7EE;
+  --bib: #F2C230;
+  --bib-ink: #2A2200;
+  --gk: #0F2A1B;
+  --danger: #B3261E;
+  --font-display: "Reem Kufi", "Segoe UI", Tahoma, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0B130F; --surface: #13201A; --ink: #E7EFE8; --muted: #92A798; --line: #243529;
+    --pitch: #17552F; --pitch-alt: #134A29; --gk: #0A1A12; --danger: #FF8A80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0B130F; --surface: #13201A; --ink: #E7EFE8; --muted: #92A798; --line: #243529;
+  --pitch: #17552F; --pitch-alt: #134A29; --gk: #0A1A12; --danger: #FF8A80; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+[hidden] { display: none !important; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+select, input, textarea, button { font: inherit; color: inherit; }
+input, textarea {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; width: 100%;
+}
+textarea { resize: vertical; min-height: 5.5rem; }
+:focus-visible { outline: 3px solid var(--bib); outline-offset: 2px; }
+button {
+  cursor: pointer; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 8px 14px; font-weight: 500;
+}
+button.primary { background: var(--bib); color: var(--bib-ink); border-color: var(--bib); font-weight: 600; }
+button.danger { color: var(--danger); }
+button:disabled { opacity: .55; cursor: default; }
+
+/* cover */
+.hero {
+  position: relative; width: 100%; aspect-ratio: 400 / 640; min-height: 540px; border-radius: 16px; overflow: hidden;
+  background: #070D22; color: #fff;
+}
+.hero svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero-in { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 26px 20px 22px; }
+.hero h1 { font-size: 2.5rem; text-shadow: 0 2px 14px rgba(0, 0, 0, .55); }
+.hero .sub { margin: 6px 0 0; font-size: 1.02rem; color: #DCE3F5; text-shadow: 0 1px 8px rgba(0, 0, 0, .6); }
+.entrances { display: flex; flex-direction: column; gap: 10px; }
+.entrances button { width: 100%; padding: 14px 16px; font-size: 1.1rem; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.entrances .player-btn { background: var(--bib); color: var(--bib-ink); border-color: var(--bib); font-weight: 600; }
+.entrances .coach-btn { background: rgba(7, 13, 34, .72); color: #fff; border-color: rgba(255, 255, 255, .45); }
+.entrances small { font-weight: 400; font-size: .85rem; opacity: .85; }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.top button { flex: none; }
+.match { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.match .vs { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.match .vs b { font-family: var(--font-display); font-size: 1.5rem; line-height: 1.2; }
+.chip { background: var(--bib); color: var(--bib-ink); font-size: .78rem; font-weight: 600; padding: 1px 9px; border-radius: 99px; }
+.facts { display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--muted); font-size: .95rem; }
+.facts span { font-variant-numeric: tabular-nums; }
+.formation-tag { font-family: var(--font-display); font-size: 1.1rem; color: var(--muted); direction: ltr; unicode-bidi: isolate; }
+
+.pitch {
+  position: relative; width: 100%; max-width: 460px; margin: 0 auto; aspect-ratio: 68 / 100; border-radius: 12px; overflow: hidden;
+  background: repeating-linear-gradient(to bottom, var(--pitch) 0 10%, var(--pitch-alt) 10% 20%);
+}
+.pitch svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pl { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px; width: 5.4rem; }
+.shirt-wrap { position: relative; width: 2.7rem; height: 2.7rem; }
+.shirt {
+  width: 100%; height: 100%; border-radius: 50%; background: var(--bib); color: var(--bib-ink); overflow: hidden;
+  display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.05rem;
+  border: 2px solid var(--chalk); font-variant-numeric: tabular-nums;
+}
+.shirt img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.badge {
+  position: absolute; bottom: -4px; inset-inline-end: -6px; min-width: 1.25rem; height: 1.25rem; padding: 0 3px; border-radius: 99px;
+  background: var(--bib); color: var(--bib-ink); font-family: var(--font-display); font-weight: 700; font-size: .75rem; line-height: 1.25rem;
+  text-align: center; border: 1.5px solid var(--chalk); font-variant-numeric: tabular-nums;
+}
+.pl.gk .shirt { background: var(--gk); color: var(--chalk); }
+.pl.empty .shirt { background: transparent; color: var(--chalk); border-style: dashed; opacity: .7; }
+.pl .nm {
+  color: #fff; font-size: .78rem; font-weight: 600; text-align: center; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .75); padding: 0 2px;
+}
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.panel h2 { font-family: var(--font-display); font-size: 1.2rem; margin: 0; }
+.subs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px 14px; }
+.subs li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.subs .n { font-family: var(--font-display); font-weight: 700; min-width: 1.8rem; text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; font-variant-numeric: tabular-nums; }
+.subs .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.note { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.muted { color: var(--muted); }
+.stamp { color: var(--muted); font-size: .85rem; text-align: center; margin: 0; }
+.chip.alt { background: var(--bg); color: var(--ink); border: 1px solid var(--line); }
+.notice { border-color: var(--bib); gap: 10px; }
+.roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.roster li { display: grid; grid-template-columns: 2.2rem minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+.roster li:first-child { border-top: 0; }
+.rn { font-family: var(--font-display); font-weight: 700; text-align: center; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; font-variant-numeric: tabular-nums; }
+.rname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.coachcard { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.coach-img { width: 84px; height: 84px; flex: none; border-radius: 50%; object-fit: cover; object-position: 50% 20%; border: 3px solid var(--bib); display: block; }
+.coach-txt { display: flex; flex-direction: column; min-width: 0; color: var(--muted); }
+.coach-txt b { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.2; color: var(--ink); overflow-wrap: anywhere; }
+.empty-state { text-align: center; padding: 36px 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.empty-state p { margin: 0; max-width: 32ch; }
+.stack { display: flex; flex-direction: column; gap: 20px; }
+
+.feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.feed li + li { border-top: 1px solid var(--line); }
+.feed button { width: 100%; text-align: start; background: transparent; border: 0; border-radius: 6px; padding: 10px 4px; display: flex; flex-direction: column; gap: 0; }
+.feed button[aria-current="true"] { background: var(--bg); }
+.feed .t1 { font-weight: 600; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.feed .t2 { color: var(--muted); font-size: .85rem; }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.editor { display: flex; flex-direction: column; gap: 14px; }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+label.f { display: flex; flex-direction: column; gap: 4px; font-size: .88rem; color: var(--muted); min-width: 0; }
+.rows { display: flex; flex-direction: column; gap: 6px; }
+.row { display: grid; grid-template-columns: 3rem 3rem minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.row .role { font-size: .85rem; color: var(--muted); }
+.row input.num { text-align: center; font-variant-numeric: tabular-nums; padding-inline: 4px; }
+.photo-cell { display: flex; gap: 4px; align-items: center; }
+.photo-cell button { padding: 0; width: 2.4rem; height: 2.4rem; border-radius: 50%; overflow: hidden; display: grid; place-items: center; font-size: .72rem; }
+.photo-cell button.x { width: 1.7rem; height: 1.7rem; border-radius: 6px; font-size: .9rem; color: var(--danger); }
+.photo-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.msg { min-height: 1.4em; font-size: .9rem; color: var(--muted); margin: 0; }
+.msg.err { color: var(--danger); }
+@media (max-width: 380px) { .grid2 { grid-template-columns: minmax(0, 1fr); } .hero h1 { font-size: 2.1rem; } }
+@media (prefers-reduced-motion: no-preference) { .pl { transition: left .35s ease, top .35s ease; } }
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="ar">
+
+  <section id="home" class="hero" aria-label="الصفحة الرئيسية">
+    <svg class="scene" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050A1C"/><stop offset="1" stop-color="#2B3170"/></linearGradient>
+        <radialGradient id="glow"><stop offset="0" stop-color="#FFF6D6" stop-opacity=".95"/><stop offset=".25" stop-color="#FFF0B8" stop-opacity=".45"/><stop offset="1" stop-color="#FFF0B8" stop-opacity="0"/></radialGradient>
+        <linearGradient id="shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050A1C" stop-opacity=".0"/><stop offset="1" stop-color="#050A1C" stop-opacity=".88"/></linearGradient>
+        <linearGradient id="topshade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#050A1C" stop-opacity=".55"/><stop offset="1" stop-color="#050A1C" stop-opacity="0"/></linearGradient>
+        <pattern id="seatsA" width="18" height="9" patternUnits="userSpaceOnUse">
+          <rect width="18" height="9" fill="#1A2D78"/>
+          <rect x="0" y="0" width="4" height="3" fill="#A3203C"/><rect x="9" y="4" width="4" height="3" fill="#A3203C"/>
+          <rect x="5" y="4" width="3" height="3" fill="#2F49A8"/><rect x="13" y="0" width="3" height="3" fill="#F2C230" fill-opacity=".8"/>
+        </pattern>
+        <pattern id="seatsB" width="14" height="8" patternUnits="userSpaceOnUse">
+          <rect width="14" height="8" fill="#8E1B38"/>
+          <rect x="0" y="0" width="4" height="3" fill="#1A2D78"/><rect x="7" y="4" width="4" height="3" fill="#1A2D78"/>
+          <rect x="4" y="4" width="3" height="3" fill="#C03A55"/><rect x="10" y="0" width="3" height="3" fill="#F2C230" fill-opacity=".75"/>
+        </pattern>
+      </defs>
+      <rect width="400" height="640" fill="url(#sky)"/>
+      <g fill="#F6F8FF"><circle cx="30" cy="20" r="1"/><circle cx="90" cy="46" r="1.2"/><circle cx="160" cy="14" r="1"/><circle cx="250" cy="34" r="1.1"/><circle cx="320" cy="16" r="1"/><circle cx="372" cy="52" r="1.2"/></g>
+      <rect x="0" y="120" width="400" height="220" fill="#0A1020"/>
+      <path d="M0 192 Q200 128 400 192 L400 238 Q200 182 0 238 Z" fill="url(#seatsA)"/>
+      <path d="M0 244 Q200 188 400 244 L400 288 Q200 234 0 288 Z" fill="url(#seatsB)"/>
+      <path d="M0 294 Q200 240 400 294 L400 326 Q200 286 0 326 Z" fill="url(#seatsA)"/>
+      <path d="M0 187 Q200 122 400 187" fill="none" stroke="#C9D1EE" stroke-opacity=".55" stroke-width="3"/>
+      <g fill="#10173A"><rect x="34" y="62" width="12" height="130"/><rect x="354" y="62" width="12" height="130"/></g>
+      <circle cx="40" cy="62" r="64" fill="url(#glow)"/><circle cx="360" cy="62" r="64" fill="url(#glow)"/>
+      <g fill="#FFFBE6"><rect x="28" y="56" width="24" height="12" rx="2"/><rect x="348" y="56" width="24" height="12" rx="2"/></g>
+      <rect x="0" y="322" width="400" height="9" fill="#12173A"/>
+      <g fill="#F2C230"><rect x="14" y="324" width="26" height="4"/><rect x="120" y="324" width="26" height="4"/><rect x="226" y="324" width="26" height="4"/><rect x="332" y="324" width="26" height="4"/></g>
+      <g fill="#A3203C"><rect x="68" y="324" width="26" height="4"/><rect x="174" y="324" width="26" height="4"/><rect x="280" y="324" width="26" height="4"/></g>
+      <rect x="0" y="331" width="400" height="26" fill="#2C8A4A"/>
+      <rect x="0" y="357" width="400" height="36" fill="#257A40"/>
+      <rect x="0" y="393" width="400" height="46" fill="#2C8A4A"/>
+      <rect x="0" y="439" width="400" height="58" fill="#257A40"/>
+      <rect x="0" y="497" width="400" height="72" fill="#2C8A4A"/>
+      <rect x="0" y="569" width="400" height="71" fill="#257A40"/>
+      <g fill="none" stroke="#F2F7EE" stroke-opacity=".7" stroke-width="2">
+        <polygon points="116,333 284,333 314,372 86,372"/>
+        <polygon points="158,333 242,333 252,346 148,346"/>
+        <line x1="0" y1="428" x2="400" y2="428"/>
+        <ellipse cx="200" cy="428" rx="96" ry="26"/>
+      </g>
+      <rect y="340" width="400" height="300" fill="url(#shade)"/>
+      <rect width="400" height="150" fill="url(#topshade)"/>
+      <!-- players -->
+      <g transform="translate(92 438) scale(1.9)">
+        <ellipse cx="0" cy="12" rx="10" ry="2.6" fill="#000" fill-opacity=".35"/>
+        <path d="M-3 -4 L-6 10 M3 -4 L7 8" stroke="#D9A37A" stroke-width="3.6" stroke-linecap="round"/>
+        <path d="M-6 10 L-6 12 M7 8 L8 11" stroke="#F2C230" stroke-width="3.4" stroke-linecap="round"/>
+        <rect x="-6.5" y="-12" width="13" height="9" rx="2" fill="#16256A"/>
+        <rect x="-7" y="-27" width="14" height="16" rx="4" fill="#F2C230"/>
+        <path d="M-7 -23 L-13 -14 M7 -23 L13 -17" stroke="#F2C230" stroke-width="3.6" stroke-linecap="round"/>
+        <circle cx="0" cy="-33" r="5" fill="#D9A37A"/><path d="M-5 -34 Q0 -41 5 -34 Z" fill="#2A1A10"/>
+      </g>
+      <g transform="translate(236 470) scale(2.1) rotate(-6)">
+        <ellipse cx="0" cy="12" rx="11" ry="2.8" fill="#000" fill-opacity=".35"/>
+        <path d="M-3 -4 L-11 6 M3 -4 L9 10" stroke="#8B5E3C" stroke-width="3.6" stroke-linecap="round"/>
+        <path d="M-11 6 L-13 8 M9 10 L10 12" stroke="#A3203C" stroke-width="3.4" stroke-linecap="round"/>
+        <rect x="-6.5" y="-12" width="13" height="9" rx="2" fill="#F2F7EE"/>
+        <rect x="-7" y="-27" width="14" height="16" rx="4" fill="#A3203C"/>
+        <path d="M-7 -23 L-14 -18 M7 -23 L14 -26" stroke="#A3203C" stroke-width="3.6" stroke-linecap="round"/>
+        <circle cx="0" cy="-33" r="5" fill="#8B5E3C"/><path d="M-5 -34 Q0 -41 5 -34 Z" fill="#14100C"/>
+        <circle cx="-17" cy="10" r="3.6" fill="#fff"/><path d="M-17 7 L-14.5 10 L-17 13 L-19.5 10 Z" fill="#222"/>
+      </g>
+      <g transform="translate(322 392) scale(1.5)">
+        <ellipse cx="0" cy="12" rx="9" ry="2.4" fill="#000" fill-opacity=".35"/>
+        <path d="M-3 -4 L-5 10 M3 -4 L5 10" stroke="#C99A72" stroke-width="3.6" stroke-linecap="round"/>
+        <rect x="-6.5" y="-12" width="13" height="9" rx="2" fill="#0F2A1B"/>
+        <rect x="-7" y="-27" width="14" height="16" rx="4" fill="#2E8F5B"/>
+        <path d="M-7 -23 L-15 -30 M7 -23 L15 -30" stroke="#2E8F5B" stroke-width="3.6" stroke-linecap="round"/>
+        <circle cx="-16" cy="-31" r="3" fill="#EDEFF2"/><circle cx="16" cy="-31" r="3" fill="#EDEFF2"/>
+        <circle cx="0" cy="-33" r="5" fill="#C99A72"/><path d="M-5 -34 Q0 -41 5 -34 Z" fill="#2A1A10"/>
+      </g>
+    </svg>
+    <div class="hero-in">
+      <div>
+        <h1>تشكيلة الفريق</h1>
+        <p class="sub">اعرف مكانك قبل صافرة البداية.</p>
+      </div>
+      <div class="entrances">
+        <button type="button" class="player-btn" id="enterPlayer"><span>الدخول كلاعب</span><small>آخر التشكيلات والمواعيد</small></button>
+        <button type="button" class="coach-btn" id="enterCoach"><span>الدخول كمدرب</span><small>بكلمة سر</small></button>
+      </div>
+    </div>
+  </section>
+
+  <div id="app" class="stack" hidden>
+    <div class="top">
+      <h1 id="pageTitle">آخر التحديثات</h1>
+      <div class="actions"><button type="button" id="refreshBtn">تحديث</button><button type="button" id="backBtn">الرئيسية</button></div>
+    </div>
+    <div id="coachBar" class="actions" hidden></div>
+    <div id="view"></div>
+    <form id="editor" class="panel editor" hidden></form>
+  </div>
+</div>
+
+<script>
+(function () {
+  var FORMATIONS = {
+    "2-2":     [[50,86,"حارس"],[28,64,"دفاع"],[72,64,"دفاع"],[28,26,"هجوم"],[72,26,"هجوم"]],
+    "1-2-1":   [[50,88,"حارس"],[50,66,"دفاع"],[26,44,"وسط"],[74,44,"وسط"],[50,20,"هجوم"]],
+    "2-3-1":   [[50,88,"حارس"],[28,68,"دفاع"],[72,68,"دفاع"],[18,44,"وسط"],[50,46,"وسط"],[82,44,"وسط"],[50,20,"هجوم"]],
+    "3-2-1":   [[50,88,"حارس"],[18,68,"دفاع"],[50,70,"دفاع"],[82,68,"دفاع"],[32,44,"وسط"],[68,44,"وسط"],[50,20,"هجوم"]],
+    "4-4-2":  [[50,90,"حارس"],[14,70,"دفاع"],[38,70,"دفاع"],[62,70,"دفاع"],[86,70,"دفاع"],[14,46,"وسط"],[38,46,"وسط"],[62,46,"وسط"],[86,46,"وسط"],[36,20,"هجوم"],[64,20,"هجوم"]],
+    "4-3-3":   [[50,90,"حارس"],[14,70,"دفاع"],[38,70,"دفاع"],[62,70,"دفاع"],[86,70,"دفاع"],[25,48,"وسط"],[50,48,"وسط"],[75,48,"وسط"],[20,20,"هجوم"],[50,17,"هجوم"],[80,20,"هجوم"]],
+    "4-2-3-1": [[50,90,"حارس"],[14,72,"دفاع"],[38,72,"دفاع"],[62,72,"دفاع"],[86,72,"دفاع"],[35,56,"وسط"],[65,56,"وسط"],[20,36,"وسط"],[50,36,"وسط"],[80,36,"وسط"],[50,15,"هجوم"]],
+    "3-5-2":   [[50,90,"حارس"],[25,70,"دفاع"],[50,72,"دفاع"],[75,70,"دفاع"],[10,46,"وسط"],[30,50,"وسط"],[50,44,"وسط"],[70,50,"وسط"],[90,46,"وسط"],[36,20,"هجوم"],[64,20,"هجوم"]],
+    "3-4-3":   [[50,90,"حارس"],[25,70,"دفاع"],[50,72,"دفاع"],[75,70,"دفاع"],[14,48,"وسط"],[38,48,"وسط"],[62,48,"وسط"],[86,48,"وسط"],[20,20,"هجوم"],[50,17,"هجوم"],[80,20,"هجوم"]]
+  };
+  var DEFAULT_FORMATION = "4-4-2";
+  var NS = "http://www.w3.org/2000/svg";
+
+  var token = null, hasPassword = null, dbFailed = false;
+  var assetsNs = { upload: function (dataUrl) { return Promise.resolve({ id: dataUrl }); } };
+  try { token = sessionStorage.getItem("coachToken") || null; } catch (e) {}
+  var lineups = [], selectedId = null, editing = false, draft = null, saving = false, loaded = false;
+  var delTimer = null, delArmed = false;
+  var screen = "home", latestKey = "", notice = "", refreshing = false;
+  var changingPw = false, pollTimer = null;
+
+  var homeEl = document.getElementById("home");
+  var appEl = document.getElementById("app");
+  var viewEl = document.getElementById("view");
+  var editorEl = document.getElementById("editor");
+  var coachBar = document.getElementById("coachBar");
+
+  function coachMode() { return screen === "coach" && !!token && !changingPw; }
+  function gating() { return screen === "coach" && (!token || changingPw); }
+
+  function h(tag, attrs, kids) {
+    var el = document.createElement(tag);
+    if (attrs) for (var k in attrs) {
+      if (k === "text") el.textContent = attrs[k];
+      else if (k === "class") el.className = attrs[k];
+      else if (k.slice(0, 2) === "on") el.addEventListener(k.slice(2), attrs[k]);
+      else el.setAttribute(k, attrs[k]);
+    }
+    (kids || []).forEach(function (c) { if (c) el.appendChild(c); });
+    return el;
+  }
+  function blankPlayers() { var a = []; for (var i = 0; i < 11; i++) a.push({ num: "", name: "", photo: "" }); return a; }
+  function newDraft() {
+    return { id: null, formation: DEFAULT_FORMATION, players: blankPlayers(), subs: [], opponent: "", date: "", time: "", venue: "", note: "", coach: "", coachPhoto: "" };
+  }
+  function cloneDoc(d) {
+    var players = (d.players || []).map(function (p) { return { num: String(p.num || ""), name: String(p.name || ""), photo: String(p.photo || "") }; });
+    while (players.length < 11) players.push({ num: "", name: "", photo: "" });
+    return {
+      id: d.id || null, formation: FORMATIONS[d.formation] ? d.formation : DEFAULT_FORMATION, players: players.slice(0, 11),
+      subs: (d.subs || []).slice(), opponent: d.opponent || "", date: d.date || "", time: d.time || "", venue: d.venue || "", note: d.note || "", coach: d.coach || "", coachPhoto: d.coachPhoto || ""
+    };
+  }
+  function fmtDate(s) {
+    if (!s) return "";
+    try {
+      var p = s.split("-");
+      return new Intl.DateTimeFormat("ar-DZ-u-nu-latn", { weekday: "long", day: "numeric", month: "long" }).format(new Date(+p[0], +p[1] - 1, +p[2]));
+    } catch (e) { return s; }
+  }
+  function fmtStamp(iso) {
+    try { return new Intl.DateTimeFormat("ar-DZ-u-nu-latn", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(iso)); }
+    catch (e) { return ""; }
+  }
+  function isFresh(iso) { var t = Date.parse(iso); return t && Date.now() - t < 24 * 3600 * 1000; }
+
+  function pitchLines() {
+    var svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "0 0 68 100");
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("aria-hidden", "true");
+    function add(tag, a) {
+      var e = document.createElementNS(NS, tag);
+      for (var k in a) e.setAttribute(k, a[k]);
+      e.setAttribute("fill", "none");
+      e.setAttribute("stroke", "#F2F7EE");
+      e.setAttribute("stroke-opacity", ".6");
+      e.setAttribute("stroke-width", ".5");
+      svg.appendChild(e);
+    }
+    add("rect", { x: 2, y: 2, width: 64, height: 96 });
+    add("line", { x1: 2, y1: 50, x2: 66, y2: 50 });
+    add("circle", { cx: 34, cy: 50, r: 8 });
+    add("rect", { x: 14, y: 2, width: 40, height: 15 });
+    add("rect", { x: 24, y: 2, width: 20, height: 6 });
+    add("rect", { x: 14, y: 83, width: 40, height: 15 });
+    add("rect", { x: 24, y: 92, width: 20, height: 6 });
+    return svg;
+  }
+  function buildPitch(doc) {
+    var slots = FORMATIONS[doc.formation] || FORMATIONS[DEFAULT_FORMATION];
+    var pitch = h("div", { class: "pitch", role: "img", "aria-label": "ملعب التشكيلة " + doc.formation });
+    pitch.appendChild(pitchLines());
+    slots.forEach(function (s, i) {
+      var p = doc.players[i] || { num: "", name: "", photo: "" };
+      var empty = !p.num && !p.name && !p.photo;
+      var shirt = h("div", { class: "shirt" });
+      var wrap = h("div", { class: "shirt-wrap" }, [shirt]);
+      if (p.photo) {
+        var img = h("img", { src: p.photo, alt: p.name || "" });
+        img.addEventListener("error", function () { img.remove(); shirt.textContent = p.num || ""; });
+        shirt.appendChild(img);
+        if (p.num) wrap.appendChild(h("span", { class: "badge", text: p.num }));
+      } else {
+        shirt.textContent = p.num || (empty ? "؟" : "");
+      }
+      var el = h("div", { class: "pl" + (i === 0 ? " gk" : "") + (empty ? " empty" : "") }, [wrap, h("div", { class: "nm", text: p.name || "" })]);
+      el.style.left = s[0] + "%";
+      el.style.top = s[1] + "%";
+      pitch.appendChild(el);
+    });
+    return pitch;
+  }
+
+  function current() { for (var i = 0; i < lineups.length; i++) if (lineups[i].id === selectedId) return lineups[i]; return null; }
+
+  function renderCoachBar() {
+    coachBar.textContent = "";
+    if (!coachMode() || editing) { coachBar.hidden = true; return; }
+    var cur = current();
+    coachBar.appendChild(h("button", { type: "button", class: "primary", text: "تشكيلة جديدة", onclick: function () { startEdit(null); } }));
+    if (cur) coachBar.appendChild(h("button", { type: "button", text: "تعديل هذه التشكيلة", onclick: function () { startEdit(cur); } }));
+    coachBar.appendChild(h("button", { type: "button", text: "تغيير كلمة السر", onclick: function () { changingPw = true; render(); } }));
+    coachBar.appendChild(h("button", { type: "button", text: "خروج", onclick: logout }));
+    coachBar.hidden = false;
+  }
+
+  function section(title, body) { return h("section", { class: "panel" }, [h("h2", { text: title }), body]); }
+
+  function renderFeed() {
+    if (lineups.length < 2) return null;
+    var ul = h("ul", { class: "feed" });
+    lineups.slice(0, 10).forEach(function (l) {
+      var b = h("button", { type: "button", onclick: function () { selectedId = l.id; render(); window.scrollTo(0, 0); } }, [
+        h("span", { class: "t1" }, [h("span", { text: l.opponent ? "ضد " + l.opponent : "تشكيلة" }), isFresh(l.updatedAt) ? h("span", { class: "chip", text: "جديدة" }) : null]),
+        h("span", { class: "t2", text: (l.date ? fmtDate(l.date) + " · " : "") + "نُشرت " + fmtStamp(l.updatedAt) })
+      ]);
+      if (l.id === selectedId) b.setAttribute("aria-current", "true");
+      ul.appendChild(h("li", null, [b]));
+    });
+    return section("آخر التحديثات", ul);
+  }
+
+  function renderView() {
+    viewEl.textContent = "";
+    if (gating()) { renderGate(); return; }
+    if (editing) { viewEl.appendChild(buildPitch(draft)); return; }
+    var stack = h("div", { class: "stack" });
+    viewEl.appendChild(stack);
+    if (notice && coachMode()) {
+      stack.appendChild(h("div", { class: "panel notice", role: "status" }, [
+        h("b", { text: notice }),
+        h("div", { class: "actions" }, [
+          h("button", { type: "button", class: "primary", text: "عرض كما يراها اللاعبون", onclick: function () { go("player"); } }),
+          h("button", { type: "button", text: "إخفاء", onclick: function () { notice = ""; render(); } })
+        ])
+      ]));
+    }
+    if (dbFailed) { stack.appendChild(h("div", { class: "panel empty-state" }, [h("p", { text: "تعذّر الاتصال بالخادم. تحقق من الإنترنت ثم اضغط «تحديث»." })])); return; }
+    if (!loaded) { stack.appendChild(h("div", { class: "panel empty-state" }, [h("p", { class: "muted", text: "جارٍ تحميل التشكيلة…" })])); return; }
+    var cur = current();
+    if (!cur) {
+      var kids = [h("p", { text: coachMode() ? "لم تنشر أي تشكيلة بعد. اضغط الزر لتضع تشكيلة المباراة القادمة." : "لم ينزّل المدرب أي تشكيلة بعد. ستظهر هنا فور نشرها." })];
+      if (coachMode()) kids.push(h("button", { type: "button", class: "primary", text: "تشكيلة جديدة", onclick: function () { startEdit(null); } }));
+      stack.appendChild(h("div", { class: "panel empty-state" }, kids));
+      return;
+    }
+    var cd = countdown(cur);
+    var vs = h("div", { class: "vs" }, [
+      h("b", { text: cur.opponent ? "ضد " + cur.opponent : "تشكيلة المباراة" }),
+      isFresh(cur.updatedAt) ? h("span", { class: "chip", text: "جديدة" }) : null,
+      cd ? h("span", { class: "chip alt", text: cd }) : null,
+      h("span", { class: "formation-tag", text: cur.formation })
+    ]);
+    var hasFacts = cur.date || cur.time || cur.venue;
+    var facts = h("div", { class: "facts" }, [
+      cur.date ? h("span", { text: fmtDate(cur.date) }) : null,
+      cur.time ? h("span", { text: "الساعة " + cur.time }) : null,
+      cur.venue ? h("span", { text: cur.venue }) : null
+    ]);
+    stack.appendChild(h("div", { class: "match" }, [vs, hasFacts ? facts : null]));
+    stack.appendChild(buildPitch(cloneDoc(cur)));
+    stack.appendChild(buildRoster(cur));
+
+    var subs = (cur.subs || []).filter(Boolean);
+    if (subs.length) {
+      var ul = h("ul", { class: "subs" });
+      subs.forEach(function (line) {
+        var m = /^\s*(\d{1,3})\s+(.*)$/.exec(line);
+        ul.appendChild(h("li", null, [h("span", { class: "n", text: m ? m[1] : "–" }), h("span", { class: "t", text: m ? m[2] : line })]));
+      });
+      stack.appendChild(section("البدلاء", ul));
+    }
+    if (cur.note) stack.appendChild(section("كلمة المدرب", h("p", { class: "note", text: cur.note })));
+    var feed = renderFeed();
+    if (feed) stack.appendChild(feed);
+    if (cur.updatedAt) stack.appendChild(h("p", { class: "stamp", text: "آخر تحديث: " + fmtStamp(cur.updatedAt) }));
+    if (cur.coach || cur.coachPhoto) {
+      var ph = null;
+      if (cur.coachPhoto) {
+        ph = h("img", { class: "coach-img", src: cur.coachPhoto, alt: cur.coach || "المدرب" });
+        ph.addEventListener("error", function () { ph.remove(); });
+      }
+      stack.appendChild(h("div", { class: "coachcard" }, [
+        ph,
+        h("div", { class: "coach-txt" }, [h("span", { text: "المدرب" }), h("b", { text: cur.coach || "" })])
+      ]));
+    }
+  }
+
+  function render() {
+    var home = screen === "home";
+    homeEl.hidden = !home;
+    appEl.hidden = home;
+    if (home) return;
+    document.getElementById("pageTitle").textContent = screen === "coach" ? "لوحة المدرب" : "آخر التحديثات";
+    renderCoachBar();
+    renderView();
+    editorEl.hidden = !editing;
+  }
+
+  document.getElementById("enterPlayer").addEventListener("click", function () { go("player"); });
+  document.getElementById("enterCoach").addEventListener("click", function () { go("coach"); });
+  document.getElementById("backBtn").addEventListener("click", function () { editing = false; draft = null; changingPw = false; go("home"); });
+  document.getElementById("refreshBtn").addEventListener("click", function () { refreshLineups(true); });
+  function api(method, path, body) {
+    var headers = { "content-type": "application/json" };
+    if (token) headers.authorization = "Bearer " + token;
+    return fetch(path, { method: method, headers: headers, body: body ? JSON.stringify(body) : undefined, cache: "no-store" }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) { var e = new Error(d.error || "http"); e.status = r.status; e.code = d.error; throw e; }
+        return d;
+      });
+    });
+  }
+  function setToken(t) {
+    token = t;
+    try { if (t) sessionStorage.setItem("coachToken", t); else sessionStorage.removeItem("coachToken"); } catch (e) {}
+  }
+  function logout() { setToken(null); editing = false; draft = null; changingPw = false; render(); }
+  function go(name) {
+    screen = name; notice = "";
+    if (name !== "home" && lineups.length) selectedId = lineups[0].id;
+    if (name !== "home") refreshLineups(false);
+    render();
+    window.scrollTo(0, 0);
+  }
+  function applyList(list) {
+    lineups = list;
+    loaded = true; dbFailed = false;
+    var key = lineups.length ? lineups[0].id + "|" + lineups[0].updatedAt : "";
+    if (!selectedId || !current() || key !== latestKey) selectedId = lineups.length ? lineups[0].id : null;
+    latestKey = key;
+    if (!editing) render();
+  }
+  function refreshLineups(manual) {
+    if (refreshing) return;
+    refreshing = true;
+    var btn = document.getElementById("refreshBtn");
+    if (manual && btn) btn.textContent = "جارٍ التحديث…";
+    api("GET", "/api/state").then(function (d) {
+      refreshing = false; if (btn) btn.textContent = "تحديث";
+      hasPassword = d.hasPassword;
+      applyList(d.lineups || []);
+    }, function () {
+      refreshing = false; if (btn) btn.textContent = "تحديث";
+      if (!loaded) { dbFailed = true; if (!editing) render(); }
+    });
+  }
+  /* a new post always sorts first, even when this device's clock is behind an older post */
+  function nextStamp() {
+    var top = lineups.length ? (Date.parse(lineups[0].updatedAt) || 0) : 0;
+    return new Date(Math.max(Date.now(), top + 1000)).toISOString();
+  }
+  function countdown(cur) {
+    if (!cur.date) return "";
+    var p = cur.date.split("-"), t = (cur.time || "00:00").split(":");
+    var diff = new Date(+p[0], +p[1] - 1, +p[2], +t[0] || 0, +t[1] || 0) - Date.now();
+    if (isNaN(diff) || diff < 0) return "";
+    var mins = Math.floor(diff / 60000), days = Math.floor(mins / 1440), hrs = Math.floor((mins % 1440) / 60);
+    if (days >= 1) return "بعد " + days + " يوم" + (hrs ? " و" + hrs + " ساعة" : "");
+    if (hrs >= 1) return "بعد " + hrs + " ساعة";
+    return "بعد " + Math.max(mins, 1) + " دقيقة";
+  }
+  function lineupText(cur) {
+    var doc = cloneDoc(cur), slots = FORMATIONS[doc.formation], L = [], meta = [];
+    L.push("تشكيلة المباراة" + (cur.opponent ? " ضد " + cur.opponent : ""));
+    if (cur.date) meta.push(fmtDate(cur.date));
+    if (cur.time) meta.push("الساعة " + cur.time);
+    if (cur.venue) meta.push(cur.venue);
+    if (meta.length) L.push(meta.join(" · "));
+    L.push("طريقة اللعب: " + doc.formation, "الأساسيون:");
+    slots.forEach(function (s, i) { var p = doc.players[i]; L.push((p.num ? p.num + " " : "") + (p.name || "—") + " (" + s[2] + ")"); });
+    var subs = (cur.subs || []).filter(Boolean);
+    if (subs.length) { L.push("البدلاء:"); subs.forEach(function (x) { L.push(x); }); }
+    if (cur.note) L.push("كلمة المدرب: " + cur.note);
+    if (cur.coach) L.push("المدرب: " + cur.coach);
+    return L.join("\n");
+  }
+  function buildRoster(cur) {
+    var doc = cloneDoc(cur), slots = FORMATIONS[doc.formation], ul = h("ul", { class: "roster" });
+    slots.forEach(function (s, i) {
+      var p = doc.players[i];
+      ul.appendChild(h("li", null, [h("span", { class: "rn", text: p.num || "–" }), h("span", { class: "rname", text: p.name || "—" }), h("span", { class: "muted", text: s[2] })]));
+    });
+    var box = h("textarea", { readonly: "", hidden: "", rows: "8", "aria-label": "نص التشكيلة" });
+    var btn = h("button", { type: "button", text: "نسخ التشكيلة كنص" });
+    btn.addEventListener("click", function () {
+      var text = lineupText(cur);
+      function done() { btn.textContent = "تم النسخ"; setTimeout(function () { btn.textContent = "نسخ التشكيلة كنص"; }, 2000); }
+      function fallback() { box.value = text; box.hidden = false; box.focus(); box.select(); }
+      try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(done, fallback); return; } } catch (e) {}
+      fallback();
+    });
+    return section("الأساسيون", h("div", { class: "stack", style: "gap:10px" }, [ul, btn, box]));
+  }
+
+  /* ---------- coach editor ---------- */
+  function startEdit(doc) {
+    if (doc) draft = cloneDoc(doc);
+    else if (lineups.length) { draft = cloneDoc(lineups[0]); draft.id = null; draft.opponent = ""; draft.date = ""; draft.time = ""; draft.note = ""; }
+    else draft = newDraft();
+    editing = true; delArmed = false;
+    buildEditor();
+    render();
+    editorEl.scrollIntoView({ block: "start" });
+  }
+  function setMsg(text, err) {
+    var m = document.getElementById("msg");
+    if (!m) return;
+    m.textContent = text || "";
+    m.className = "msg" + (err ? " err" : "");
+  }
+  function refreshPitch() {
+    var old = viewEl.querySelector(".pitch");
+    var np = buildPitch(draft);
+    if (old) viewEl.replaceChild(np, old); else viewEl.appendChild(np);
+  }
+  function field(id, label, input) { return h("label", { class: "f", for: id }, [h("span", { text: label }), input]); }
+
+  function squareJpeg(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () {
+        var S = 256, c = document.createElement("canvas");
+        c.width = S; c.height = S;
+        var side = Math.min(img.width, img.height);
+        var sy = img.height > img.width ? 0 : (img.height - side) / 2;
+        c.getContext("2d").drawImage(img, (img.width - side) / 2, sy, side, side, 0, 0, S, S);
+        URL.revokeObjectURL(url);
+        resolve(c.toDataURL("image/jpeg", 0.8));
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("img")); };
+      img.src = url;
+    });
+  }
+
+  function buildEditor() {
+    editorEl.textContent = "";
+    editorEl.appendChild(h("h2", { text: draft.id ? "تعديل التشكيلة" : "تشكيلة جديدة" }));
+
+    function textInput(id, key, type, ph) {
+      var i = h("input", { id: id, type: type || "text", value: draft[key] || "", placeholder: ph || "" });
+      i.addEventListener("input", function () { draft[key] = i.value; });
+      return i;
+    }
+    editorEl.appendChild(field("fOpp", "الفريق المنافس", textInput("fOpp", "opponent", "text", "اسم الخصم")));
+    editorEl.appendChild(h("div", { class: "grid2" }, [
+      field("fDate", "التاريخ", textInput("fDate", "date", "date")),
+      field("fTime", "الساعة", textInput("fTime", "time", "time"))
+    ]));
+    editorEl.appendChild(field("fVenue", "الملعب", textInput("fVenue", "venue", "text", "مكان المباراة")));
+    editorEl.appendChild(field("fCoach", "اسم المدرب", textInput("fCoach", "coach", "text", "اسم المدرب")));
+    if (assetsNs) {
+      var cpFile = h("input", { type: "file", accept: "image/*", hidden: "", id: "fCoachPhoto" });
+      var cpPrev = h("div", { class: "photo-cell" });
+      var drawCp = function () {
+        cpPrev.textContent = "";
+        if (draft.coachPhoto) cpPrev.appendChild(h("img", { class: "coach-img", style: "width:56px;height:56px", src: draft.coachPhoto, alt: "" }));
+        cpPrev.appendChild(h("button", { type: "button", text: draft.coachPhoto ? "تغيير صورة المدرب" : "إضافة صورة المدرب", onclick: function () { cpFile.click(); } }));
+        if (draft.coachPhoto) cpPrev.appendChild(h("button", { type: "button", class: "x", title: "إزالة", "aria-label": "إزالة صورة المدرب", text: "×", style: "width:1.7rem;height:1.7rem;padding:0;color:var(--danger)", onclick: function () { draft.coachPhoto = ""; drawCp(); } }));
+      };
+      cpFile.addEventListener("change", function () {
+        var f = cpFile.files && cpFile.files[0];
+        if (!f) return;
+        setMsg("جارٍ رفع الصورة…");
+        squareJpeg(f).then(function (blob) { return assetsNs.upload(blob); }).then(function (r) {
+          draft.coachPhoto = r.id; setMsg(""); drawCp();
+        }, function () { setMsg("تعذّر رفع الصورة. جرّب صورة أخرى.", true); });
+      });
+      drawCp();
+      editorEl.appendChild(h("div", { class: "f", style: "display:flex;flex-direction:column;gap:6px" }, [h("span", { class: "muted", style: "font-size:.88rem", text: "صورة المدرب" }), cpPrev, cpFile]));
+    }
+
+    var sel = h("select", { id: "fForm", style: "background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%" });
+    Object.keys(FORMATIONS).forEach(function (k) {
+      var o = h("option", { value: k, text: k });
+      if (k === draft.formation) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", function () { draft.formation = sel.value; buildRows(); refreshPitch(); });
+    editorEl.appendChild(field("fForm", "طريقة اللعب", sel));
+
+    editorEl.appendChild(h("div", { class: "rows", id: "rows" }));
+    buildRows();
+
+    var subsTa = h("textarea", { id: "fSubs", placeholder: "رقم ثم اسم، لاعب في كل سطر\n12 كريم\n14 ياسين" });
+    subsTa.value = draft.subs.join("\n");
+    subsTa.addEventListener("input", function () { draft.subs = subsTa.value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean); });
+    editorEl.appendChild(field("fSubs", "البدلاء", subsTa));
+
+    var noteTa = h("textarea", { id: "fNote", placeholder: "تعليمات أو رسالة للفريق" });
+    noteTa.value = draft.note;
+    noteTa.addEventListener("input", function () { draft.note = noteTa.value; });
+    editorEl.appendChild(field("fNote", "كلمة المدرب", noteTa));
+
+    var acts = h("div", { class: "actions" }, [
+      h("button", { type: "submit", class: "primary", id: "saveBtn", text: "حفظ ونشر التشكيلة" }),
+      h("button", { type: "button", text: "إلغاء", onclick: cancelEdit })
+    ]);
+    if (draft.id && draft.id !== "default") acts.appendChild(h("button", { type: "button", class: "danger", id: "delBtn", text: "حذف", onclick: onDelete }));
+    editorEl.appendChild(acts);
+    editorEl.appendChild(h("p", { class: "msg", id: "msg", role: "status" }));
+  }
+  function buildRows() {
+    var rows = document.getElementById("rows");
+    rows.textContent = "";
+    rows.appendChild(h("span", { class: "muted", text: assetsNs ? "اللاعبون الأساسيون (من الحارس إلى الهجوم) مع صورة لكل لاعب" : "اللاعبون الأساسيون (من الحارس إلى الهجوم)" }));
+    var slots = FORMATIONS[draft.formation];
+    slots.forEach(function (s, i) {
+      var num = h("input", { class: "num", inputmode: "numeric", maxlength: "2", placeholder: "رقم", "aria-label": "رقم اللاعب " + (i + 1), value: draft.players[i].num });
+      var nm = h("input", { placeholder: "اسم اللاعب", "aria-label": "اسم اللاعب " + (i + 1), value: draft.players[i].name });
+      num.addEventListener("input", function () { draft.players[i].num = num.value.replace(/\D/g, "").slice(0, 2); refreshPitch(); });
+      nm.addEventListener("input", function () { draft.players[i].name = nm.value; refreshPitch(); });
+      var cell = h("div", { class: "photo-cell" });
+      if (assetsNs) {
+        var file = h("input", { type: "file", accept: "image/*", hidden: "", id: "ph" + i, "aria-label": "صورة اللاعب " + (i + 1) });
+        var pb = h("button", { type: "button", title: "صورة اللاعب", "aria-label": "اختيار صورة اللاعب " + (i + 1) });
+        if (draft.players[i].photo) pb.appendChild(h("img", { src: draft.players[i].photo, alt: "" })); else pb.textContent = "صورة";
+        pb.addEventListener("click", function () { file.click(); });
+        file.addEventListener("change", function () {
+          var f = file.files && file.files[0];
+          if (!f) return;
+          setMsg("جارٍ رفع الصورة…");
+          squareJpeg(f).then(function (blob) { return assetsNs.upload(blob); }).then(function (r) {
+            draft.players[i].photo = r.id; setMsg(""); buildRows(); refreshPitch();
+          }, function () { setMsg("تعذّر رفع الصورة. جرّب صورة أخرى.", true); });
+        });
+        cell.appendChild(file); cell.appendChild(pb);
+        if (draft.players[i].photo) cell.appendChild(h("button", { type: "button", class: "x", title: "إزالة الصورة", "aria-label": "إزالة صورة اللاعب " + (i + 1), text: "×", onclick: function () { draft.players[i].photo = ""; buildRows(); refreshPitch(); } }));
+      }
+      rows.appendChild(h("div", { class: "row" }, [h("span", { class: "role", text: s[2] }), num, nm, cell]));
+    });
+  }
+  function cancelEdit() { editing = false; draft = null; render(); }
+
+  editorEl.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (saving) return;
+    var filled = draft.players.some(function (p) { return p.num || p.name || p.photo; });
+    if (!filled) { setMsg("اكتب لاعبا واحدا على الأقل قبل النشر.", true); return; }
+    saving = true;
+    document.getElementById("saveBtn").disabled = true;
+    setMsg("جارٍ النشر…");
+    var id = (draft.id && draft.id !== "default") ? draft.id : "m" + Date.now();
+    var data = {
+      formation: draft.formation, players: draft.players.slice(0, FORMATIONS[draft.formation].length), subs: draft.subs, opponent: draft.opponent.trim(),
+      date: draft.date, time: draft.time, venue: draft.venue.trim(), note: draft.note.trim(), coach: draft.coach.trim(), coachPhoto: draft.coachPhoto
+    };
+    api("PUT", "/api/lineups/" + id, data).then(function () {
+      refreshLineups(false);
+      saving = false; editing = false; draft = null; selectedId = id; notice = "تم نشر التشكيلة. يراها اللاعبون الآن."; render(); window.scrollTo(0, 0);
+    }, function (err) {
+      saving = false;
+      var b = document.getElementById("saveBtn"); if (b) b.disabled = false;
+      if (err && err.status === 401) { setToken(null); editing = false; draft = null; render(); return; }
+      setMsg("تعذّر النشر. تحقق من الإنترنت وأعد المحاولة.", true);
+    });
+  });
+
+  function onDelete() {
+    var btn = document.getElementById("delBtn");
+    if (!delArmed) {
+      delArmed = true; btn.textContent = "اضغط مرة أخرى لتأكيد الحذف";
+      clearTimeout(delTimer);
+      delTimer = setTimeout(function () { delArmed = false; if (btn) btn.textContent = "حذف"; }, 4000);
+      return;
+    }
+    if (saving) return;
+    saving = true; btn.disabled = true;
+    api("DELETE", "/api/lineups/" + draft.id).then(function () {
+      saving = false; editing = false; draft = null; selectedId = null; refreshLineups(false); render();
+    }, function (err) {
+      saving = false; btn.disabled = false;
+      if (err && err.status === 401) { setToken(null); editing = false; draft = null; render(); return; }
+      setMsg("تعذّر الحذف.", true);
+    });
+  }
+
+  /* ---------- coach password gate ---------- */
+  function panelMsg(text) { viewEl.appendChild(h("div", { class: "panel empty-state" }, [h("p", { text: text })])); }
+  function renderGate() {
+    viewEl.textContent = "";
+    if (dbFailed) { panelMsg("تعذّر الاتصال بالخادم. تحقق من الإنترنت ثم اضغط «تحديث»."); return; }
+    if (hasPassword === null) { panelMsg("جارٍ التحميل…"); return; }
+    var creating = !hasPassword || changingPw;
+    var pw = h("input", { id: "gPw", type: "password", autocomplete: creating ? "new-password" : "current-password" });
+    var pw2 = creating ? h("input", { id: "gPw2", type: "password", autocomplete: "new-password" }) : null;
+    var msg = h("p", { class: "msg", role: "status" });
+    function say(t, err) { msg.textContent = t; msg.className = "msg" + (err ? " err" : ""); }
+    var actions = [h("button", { type: "submit", class: "primary", text: creating ? "حفظ كلمة السر" : "دخول" })];
+    if (changingPw) actions.push(h("button", { type: "button", text: "إلغاء", onclick: function () { changingPw = false; render(); } }));
+    var form = h("form", { class: "panel editor" }, [
+      h("h2", { text: creating ? (changingPw ? "كلمة سر جديدة" : "أنشئ كلمة سر المدرب") : "دخول المدرب" }),
+      h("label", { class: "f", for: "gPw" }, [h("span", { text: creating ? "كلمة السر (4 أحرف على الأقل)" : "كلمة السر" }), pw]),
+      pw2 ? h("label", { class: "f", for: "gPw2" }, [h("span", { text: "أعد كتابتها" }), pw2]) : null,
+      h("div", { class: "actions" }, actions),
+      msg
+    ]);
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (saving) return;
+      if (creating) {
+        if (pw.value.length < 4) { say("كلمة السر قصيرة. اكتب 4 أحرف على الأقل.", true); return; }
+        if (pw.value !== pw2.value) { say("كلمتا السر غير متطابقتين.", true); return; }
+        saving = true; say("جارٍ الحفظ…");
+        var call = changingPw ? api("POST", "/api/password", { password: pw.value }) : api("POST", "/api/setup", { password: pw.value });
+        call.then(function (d) {
+          saving = false;
+          if (d.token) setToken(d.token);
+          hasPassword = true; changingPw = false; render();
+        }, function (err) {
+          saving = false;
+          if (err && err.status === 401) { setToken(null); changingPw = false; render(); return; }
+          say(err && err.status === 409 ? "تم تعيين كلمة سر من قبل. أعد تحميل الصفحة وسجّل الدخول." : "تعذّر الحفظ. أعد المحاولة.", true);
+        });
+      } else {
+        saving = true; say("جارٍ التحقق…");
+        api("POST", "/api/login", { password: pw.value }).then(function (d) {
+          saving = false; setToken(d.token); render();
+        }, function (err) {
+          saving = false;
+          say(err && err.status === 401 ? "كلمة السر غير صحيحة." : "تعذّر الاتصال. أعد المحاولة.", true);
+          if (err && err.status === 401) pw.select();
+        });
+      }
+    });
+    viewEl.appendChild(form);
+  }
+
+  /* ---------- boot ---------- */
+  try { if (location.hash === "#coach") screen = "coach"; else if (location.hash === "#player") screen = "player"; } catch (e) {}
+  render();
+  refreshLineups(false);
+  setInterval(function () { if (!document.hidden && screen !== "home" && !editing) refreshLineups(false); }, 15000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && screen !== "home" && !editing) refreshLineups(false); });
+})();
+</script>
+</body>
+</html>
